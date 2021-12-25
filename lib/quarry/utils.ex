@@ -1,4 +1,6 @@
 defmodule Quarry.Utils do
+  @moduledoc false
+
   def access_keyword(key, default \\ nil) do
     fn
       :get, data, next ->

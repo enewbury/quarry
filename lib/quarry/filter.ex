@@ -1,8 +1,12 @@
 defmodule Quarry.Filter do
+  @moduledoc false
   require Ecto.Query
 
   alias Quarry.{Join, From}
 
+  @type filter :: %{optional(atom()) => String.t() | number() | filter()}
+
+  @spec build(Ecto.Query.t(), filter()) :: Ecto.Query.t()
   def build(query, filters) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)

@@ -1,10 +1,14 @@
 defmodule Quarry.Sort do
+  @moduledoc false
   require Ecto.Query
 
   alias Quarry.{Join, From}
 
   @sort_direction [:asc, :desc]
 
+  @type sort :: atom() | [atom() | [atom()] | {:asc | :desc, atom() | [atom()]}]
+
+  @spec build(Ecto.Query.t(), sort()) :: Ecto.Query.t()
   def build(query, keys) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)

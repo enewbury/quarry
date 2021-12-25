@@ -1,4 +1,5 @@
 defmodule Quarry.From do
+  @moduledoc false
   require Ecto.Query
 
   def build(schema, bind_prefix \\ nil) do

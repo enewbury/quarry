@@ -1,8 +1,12 @@
 defmodule Quarry.Load do
+  @moduledoc false
   require Ecto.Query
 
   alias Quarry.{Join, From, Utils}
 
+  @type load :: atom() | [atom() | keyword(load())]
+
+  @spec build(Ecto.Query.t(), load()) :: Ecto.Query.t()
   def build(query, load) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)

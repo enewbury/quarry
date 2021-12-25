@@ -1,4 +1,5 @@
 defmodule Quarry.Join do
+  @moduledoc false
   require Ecto.Query
 
   def with_join(query, parent_binding, assoc) do

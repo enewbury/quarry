@@ -41,7 +41,7 @@ def deps do
 end
 ```
 
-## Examples
+## Example
 
 Full example
 
@@ -54,56 +54,7 @@ offset = 20
 Quarry.build(Post, filter: filter, load: load, sort: sort, limit: limit, offset: offset)
 ```
 
-Filter examples
-
-```elixir
-# Top level attribute
-Quarry.build(Post, filter: %{title: "Value"})
-# Field on nested belongs_to relationship
-Quarry.build(Post, filter: %{author: %{name: "John Doe"}})
-# Field on nested has_many relationship
-Quarry.build(Post, filter: %{comments: %{body: "comment body"}})
-```
-
-Load examples
-
-```elixir
-# Single atom
-Quarry.build(Post, load: :author)
-# List of atoms
-Quarry.build(Post, load: [:author, :comments])
-# Nested entities
-Quarry.build(Post, load: [comments: :user])
-# List of nested entities
-Quarry.build(Post, load: [author: [:user, :posts]])
-# Use Quarry on nested has_many association
-Quarry.build(Post, load: [comments: [filter: %{body: "comment"}, load: :user]])
-```
-
-Sort examples
-
-```elixir
-# Single field
-Quarry.build(Post, sort: :title)
-# Multiple fields
-Quarry.build(Post, sort: [:title, :body])
-# Nested fields
-Quarry.build(Post, sort: [[:author, :publisher], :title, [:author, :user, :name]])
-# Descending sort
-Quarry.build(Post, sort: [:title, desc: :body, desc: [:author, :publisher]])
-```
-
-Limit example
-
-```elixir
-Quarry.build(Post, limit: 10)
-```
-
-Offset example
-
-```elixir
-Quarry.build(Post, limit: 10, offset: 20)
-```
+See Docs for a more exhaustive list of examples
 
 ## Usage
 
