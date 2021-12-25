@@ -1,16 +1,16 @@
-defmodule Quarry.Preload do
+defmodule Quarry.Load do
   require Ecto.Query
 
   alias Quarry.{Join, From, Utils}
 
-  def build(query, preloads) do
+  def build(query, load) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
-    preloads(query, preloads, binding: root_binding, schema: schema)
+    load(query, load, binding: root_binding, schema: schema)
   end
 
-  defp preloads(query, preloads, state) do
-    preloads
+  defp load(query, load, state) do
+    load
     |> List.wrap()
     |> Enum.reduce(query, &preload_tree(&2, &1, state))
   end
@@ -36,7 +36,7 @@ defmodule Quarry.Preload do
 
     query
     |> Map.update!(:assocs, &put_in(&1, Enum.reverse(bound_path), {binding_index, []}))
-    |> preloads(children,
+    |> load(children,
       binding: join_binding,
       schema: child_schema,
       bound_path: [Access.elem(1) | bound_path],
@@ -58,7 +58,7 @@ defmodule Quarry.Preload do
     subquery =
       Quarry.build(child_schema,
         filter: Keyword.get(children, :filter, %{}),
-        preloads: Keyword.get(children, :preloads, children),
+        load: Keyword.get(children, :load, children),
         sort: Keyword.get(children, :sort, []),
         limit: Keyword.get(children, :limit),
         offset: Keyword.get(children, :offset),

@@ -30,8 +30,8 @@ defmodule QuarryTest do
       )
 
     filter = %{author: %{publisher: "publisher"}}
-    preloads = [:author]
-    actual = Quarry.build(Post, filter: filter, preloads: preloads)
+    load = [:author]
+    actual = Quarry.build(Post, filter: filter, load: load)
     assert inspect(actual) == inspect(expected)
   end
 end

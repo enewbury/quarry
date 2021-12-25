@@ -1,10 +1,10 @@
-defmodule Quarry.PreloadTest do
+defmodule Quarry.LoadTest do
   use ExUnit.Case
-  doctest Quarry.Preload
-  alias Quarry.Preload
+  doctest Quarry.Load
+  alias Quarry.Load
 
   import Ecto.Query
-  alias Quarry.{Comment, Post, Preload}
+  alias Quarry.{Comment, Post, Load}
 
   setup do
     %{base: from(p in Post, as: :post)}
@@ -20,8 +20,8 @@ defmodule Quarry.PreloadTest do
         preload: [author: a]
       )
 
-    preloads = [:author]
-    actual = Preload.build(base, preloads)
+    load = [:author]
+    actual = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -37,8 +37,8 @@ defmodule Quarry.PreloadTest do
         preload: [author: {a, user: u}]
       )
 
-    preloads = [author: :user]
-    actual = Preload.build(base, preloads)
+    load = [author: :user]
+    actual = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -52,8 +52,8 @@ defmodule Quarry.PreloadTest do
         preload: [comments: ^comments_query]
       )
 
-    preloads = [:comments]
-    actual = Preload.build(base, preloads)
+    load = [:comments]
+    actual = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -77,8 +77,8 @@ defmodule Quarry.PreloadTest do
         preload: [comments: ^comments_query]
       )
 
-    preloads = [:author, comments: :user]
-    actual = Preload.build(base, preloads)
+    load = [:author, comments: :user]
+    actual = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -98,8 +98,8 @@ defmodule Quarry.PreloadTest do
         preload: [comments: ^comments_query]
       )
 
-    preloads = [comments: [filter: %{body: "comment"}, preloads: [], limit: 1, offset: 1]]
-    actual = Preload.build(base, preloads)
+    load = [comments: [filter: %{body: "comment"}, load: [], limit: 1, offset: 1]]
+    actual = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 end

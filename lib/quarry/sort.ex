@@ -3,6 +3,8 @@ defmodule Quarry.Sort do
 
   alias Quarry.{Join, From}
 
+  @sort_direction [:asc, :desc]
+
   def build(query, keys) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
@@ -10,33 +12,41 @@ defmodule Quarry.Sort do
   end
 
   defp sort(query, binding, schema, join_deps, keys) when is_list(keys) do
-    Enum.reduce(keys, query, &sort_key(&1, &2, binding, schema, join_deps))
+    Enum.reduce(
+      keys,
+      query,
+      &sort_key(&1, join_deps, query: &2, schema: schema, binding: binding)
+    )
   end
 
   defp sort(query, binding, schema, join_deps, key),
     do: sort(query, binding, schema, join_deps, [key])
 
-  defp sort_key({field_name, children}, query, binding, schema, join_deps) do
-    assocations = schema.__schema__(:associations)
+  defp sort_key({dir, path}, join_deps, state), do: sort_key(path, dir, join_deps, state)
+  defp sort_key(path, join_deps, state), do: sort_key(path, :asc, join_deps, state)
 
-    if field_name in assocations do
-      child_schema = schema.__schema__(:association, field_name).related
-      sort(query, binding, child_schema, [field_name | join_deps], children)
+  defp sort_key([field_name], dir, join_deps, state),
+    do: sort_key(field_name, dir, join_deps, state)
+
+  defp sort_key([assoc | path], dir, join_deps, state) do
+    schema = state[:schema]
+    associations = schema.__schema__(:associations)
+
+    if assoc in associations do
+      child_schema = schema.__schema__(:association, assoc).related
+      state = Keyword.put(state, :schema, child_schema)
+      sort_key(path, dir, [assoc | join_deps], state)
     else
-      query
+      state[:query]
     end
   end
 
-  defp sort_key(value, query, binding, schema, join_deps) when is_atom(value) do
-    sort_key(%{direction: :asc, value: value}, query, binding, schema, join_deps)
-  end
-
-  defp sort_key(%{direction: dir, value: field_name}, query, binding, schema, join_deps) do
-    if field_name in schema.__schema__(:fields) and dir in [:asc, :desc] do
-      {query, join_binding} = Join.join_dependencies(query, binding, join_deps)
+  defp sort_key(field_name, dir, join_deps, state) when is_atom(field_name) do
+    if field_name in state[:schema].__schema__(:fields) and dir in @sort_direction do
+      {query, join_binding} = Join.join_dependencies(state[:query], state[:binding], join_deps)
       Ecto.Query.order_by(query, [{^dir, field(as(^join_binding), ^field_name)}])
     else
-      query
+      state[:query]
     end
   end
 end

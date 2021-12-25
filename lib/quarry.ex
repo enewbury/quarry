@@ -1,13 +1,13 @@
 defmodule Quarry do
   require Ecto.Query
 
-  alias Quarry.{From, Filter, Preload, Sort}
+  alias Quarry.{From, Filter, Load, Sort}
 
   def build(schema, opts \\ []) do
     schema
     |> From.build(Keyword.get(opts, :binding_prefix))
     |> Filter.build(Keyword.get(opts, :filter, %{}))
-    |> Preload.build(Keyword.get(opts, :preloads, []))
+    |> Load.build(Keyword.get(opts, :load, []))
     |> Sort.build(Keyword.get(opts, :sort, []))
     |> limit(Keyword.get(opts, :limit))
     |> offset(Keyword.get(opts, :offset))

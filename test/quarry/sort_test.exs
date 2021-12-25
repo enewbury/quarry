@@ -18,7 +18,7 @@ defmodule Quarry.SortTest do
 
   test "ignores bad sort field", %{base: base} do
     expected = from(p in Post, as: :post)
-    assert actual = Sort.build(base, [:fake, fake2: [:title]])
+    assert actual = Sort.build(base, [:fake, [:fake2, :title]])
     assert inspect(actual) == inspect(expected)
   end
 
@@ -43,13 +43,7 @@ defmodule Quarry.SortTest do
         order_by: [asc: as(:post_author).publisher]
       )
 
-    assert actual = Sort.build(base, author: :publisher)
-    assert inspect(actual) == inspect(expected)
-  end
-
-  test "ignores bad order sort field", %{base: base} do
-    expected = from(p in Post, as: :post)
-    assert actual = Sort.build(base, %{direction: :fake, value: :title})
+    assert actual = Sort.build(base, [[:author, :publisher]])
     assert inspect(actual) == inspect(expected)
   end
 
@@ -63,13 +57,13 @@ defmodule Quarry.SortTest do
         order_by: [asc: as(:post_author).publisher]
       )
 
-    assert actual = Sort.build(base, [:title, author: :publisher])
+    assert actual = Sort.build(base, [:title, [:author, :publisher]])
     assert inspect(actual) == inspect(expected)
   end
 
   test "can sort with desc", %{base: base} do
     expected = from(p in Post, as: :post, order_by: [desc: as(:post).title])
-    assert actual = Sort.build(base, %{direction: :desc, value: :title})
+    assert actual = Sort.build(base, desc: :title)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -82,7 +76,7 @@ defmodule Quarry.SortTest do
         order_by: [desc: as(:post_author).publisher]
       )
 
-    assert actual = Sort.build(base, author: %{direction: :desc, value: :publisher})
+    assert actual = Sort.build(base, desc: [:author, :publisher])
     assert inspect(actual) == inspect(expected)
   end
 end

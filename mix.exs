@@ -8,7 +8,18 @@ defmodule Quarry.MixProject do
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+
+      # Docs
+      name: "Quarry",
+      source_url: "https://github.com/enewbury/quarry",
+      homepage_url: "https://github.com/enewbury/quarry",
+      docs: [
+        # The main page in the docs
+        main: "Quarry",
+        # logo: "path/to/logo.png",
+        extras: ["README.md"]
+      ]
     ]
   end
 
@@ -23,6 +34,7 @@ defmodule Quarry.MixProject do
   defp deps do
     [
       {:ecto, "~> 3.5"},
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:ecto_sql, "~> 3.5", only: [:test, :dev]},
       {:postgrex, "~> 0.14", only: [:test, :dev]},
       {:ex_machina, "~> 2.3", only: [:test, :dev]}
