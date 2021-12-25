@@ -53,12 +53,15 @@ defmodule Quarry.Preload do
       |> Enum.reverse()
       |> Enum.map(&Utils.access_keyword(&1, []))
 
+    children = List.wrap(children)
+
     subquery =
       Quarry.build(child_schema,
-        filter: Keyword.get(List.wrap(children), :filter, %{}),
-        preloads: Keyword.get(List.wrap(children), :preloads, children),
-        limit: Keyword.get(List.wrap(children), :limit),
-        offset: Keyword.get(List.wrap(children), :offset),
+        filter: Keyword.get(children, :filter, %{}),
+        preloads: Keyword.get(children, :preloads, children),
+        sort: Keyword.get(children, :sort, []),
+        limit: Keyword.get(children, :limit),
+        offset: Keyword.get(children, :offset),
         binding_prefix: binding
       )
 
