@@ -6,9 +6,7 @@ defmodule Quarry.Sort do
 
   @sort_direction [:asc, :desc]
 
-  @type sort :: atom() | [atom() | [atom()] | {:asc | :desc, atom() | [atom()]}]
-
-  @spec build(Ecto.Query.t(), sort()) :: Ecto.Query.t()
+  @spec build(Ecto.Query.t(), Quarry.sort()) :: Ecto.Query.t()
   def build(query, keys) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)

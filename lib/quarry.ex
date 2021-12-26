@@ -13,10 +13,13 @@ defmodule Quarry do
 
   alias Quarry.{From, Filter, Load, Sort}
 
+  @type filter :: %{optional(atom()) => String.t() | number() | filter()}
+  @type load :: atom() | [atom() | keyword(load())]
+  @type sort :: atom() | [atom() | [atom()] | {:asc | :desc, atom() | [atom()]}]
   @type opts :: [
-          filter: Filter.filter(),
-          load: Load.load(),
-          sort: Sort.sort(),
+          filter: filter(),
+          load: load(),
+          sort: sort(),
           limit: integer(),
           offset: integer()
         ]

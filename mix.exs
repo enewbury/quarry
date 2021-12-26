@@ -1,10 +1,13 @@
 defmodule Quarry.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+  @source_url "https://github.com/enewbury/quarry"
+
   def project do
     [
       app: :quarry,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -12,14 +15,11 @@ defmodule Quarry.MixProject do
 
       # Docs
       name: "Quarry",
-      source_url: "https://github.com/enewbury/quarry",
-      homepage_url: "https://github.com/enewbury/quarry",
-      docs: [
-        # The main page in the docs
-        main: "Quarry",
-        # logo: "path/to/logo.png",
-        extras: ["README.md"]
-      ]
+      description: "A data-driven Ecto Query builder for nested associations.",
+      source_url: @source_url,
+      homepage_url: @source_url,
+      package: package(),
+      docs: docs()
     ]
   end
 
@@ -35,13 +35,31 @@ defmodule Quarry.MixProject do
     [
       {:ecto, "~> 3.5"},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
-      {:ecto_sql, "~> 3.5", only: [:test, :dev]},
-      {:postgrex, "~> 0.14", only: [:test, :dev]},
-      {:ex_machina, "~> 2.3", only: [:test, :dev]}
+      {:ecto_sql, "~> 3.5", only: [:test]},
+      {:postgrex, "~> 0.14", only: [:test]},
+      {:ex_machina, "~> 2.3", only: [:test]}
     ]
   end
 
-  defp elixirc_paths(:dev), do: ["lib", "test/support"]
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp package() do
+    [
+      maintainers: ["Eric Newbury"],
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => @source_url}
+    ]
+  end
+
+  defp docs() do
+    [
+      main: "Readme",
+      name: "Quarry",
+      source_ref: "v#{@version}",
+      canonical: "http://hexdocs.pm/quarry",
+      source_url: @source_url,
+      extras: ["README.md", "CHANGELOG.md", "LICENSE"]
+    ]
+  end
 end
