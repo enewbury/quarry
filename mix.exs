@@ -56,6 +56,7 @@ defmodule Quarry.MixProject do
     [
       main: "readme",
       name: "Quarry",
+      logo: "logo.svg",
       source_ref: "v#{@version}",
       canonical: "http://hexdocs.pm/quarry",
       source_url: @source_url,
