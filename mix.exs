@@ -47,14 +47,14 @@ defmodule Quarry.MixProject do
   defp package() do
     [
       maintainers: ["Eric Newbury"],
-      licenses: ["Apache-2.0"],
+      licenses: ["MIT"],
       links: %{"GitHub" => @source_url}
     ]
   end
 
   defp docs() do
     [
-      main: "Readme",
+      main: "readme",
       name: "Quarry",
       source_ref: "v#{@version}",
       canonical: "http://hexdocs.pm/quarry",
