@@ -43,12 +43,10 @@ end
 
 ## Example
 
-Full example
-
 ```elixir
 filter = %{title: "Hello", author: %{name: "John Doe"}}
 load = [:author, comments: :user]
-sort = [:title, author: :name]
+sort = [[:author, :publisher], :title]
 limit = 10
 offset = 20
 Quarry.build(Post, filter: filter, load: load, sort: sort, limit: limit, offset: offset)
