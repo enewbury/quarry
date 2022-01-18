@@ -24,3 +24,6 @@ quarry-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Vim swap files
+*.swp

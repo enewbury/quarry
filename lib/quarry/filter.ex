@@ -32,7 +32,7 @@ defmodule Quarry.Filter do
   defp filter_key({field_name, values}, query, binding, schema, join_deps)
        when is_list(values) do
     if field_name in schema.__schema__(:fields) do
-      {query, join_binding} = join_dependencies(query, binding, join_deps)
+      {query, join_binding} = Join.join_dependencies(query, binding, join_deps)
       Ecto.Query.where(query, field(as(^join_binding), ^field_name) in ^values)
     else
       query
@@ -41,16 +41,10 @@ defmodule Quarry.Filter do
 
   defp filter_key({field_name, value}, query, binding, schema, join_deps) do
     if field_name in schema.__schema__(:fields) do
-      {query, join_binding} = join_dependencies(query, binding, join_deps)
+      {query, join_binding} = Join.join_dependencies(query, binding, join_deps)
       Ecto.Query.where(query, field(as(^join_binding), ^field_name) == ^value)
     else
       query
     end
-  end
-
-  defp join_dependencies(query, root_binding, join_deps) do
-    List.foldr(join_deps, {query, root_binding}, fn assoc, {q, binding} ->
-      Join.with_join(q, binding, assoc)
-    end)
   end
 end

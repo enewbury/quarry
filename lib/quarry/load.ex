@@ -2,7 +2,7 @@ defmodule Quarry.Load do
   @moduledoc false
   require Ecto.Query
 
-  alias Quarry.{Join, From, Utils}
+  alias Quarry.{Join, From, QueryStruct, Utils}
 
   @spec build(Ecto.Query.t(), Quarry.load()) :: Ecto.Query.t()
   def build(query, load) do
@@ -34,10 +34,9 @@ defmodule Quarry.Load do
     bound_path = [assoc | Keyword.get(state, :bound_path, [])]
 
     {query, join_binding} = Join.with_join(query, binding, assoc)
-    binding_index = query.aliases[join_binding]
 
     query
-    |> Map.update!(:assocs, &put_in(&1, Enum.reverse(bound_path), {binding_index, []}))
+    |> QueryStruct.add_assoc(Enum.reverse(bound_path), join_binding)
     |> load(children,
       binding: join_binding,
       schema: child_schema,
@@ -67,6 +66,6 @@ defmodule Quarry.Load do
         binding_prefix: binding
       )
 
-    Map.update!(query, :preloads, &put_in(&1, unbound_path, subquery))
+    QueryStruct.add_preload(query, unbound_path, subquery)
   end
 end
