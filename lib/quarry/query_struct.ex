@@ -17,10 +17,8 @@ defmodule Quarry.QueryStruct do
   end
 
   def with_join_as(query, binding, assoc) do
-    binding_index = max(1, Enum.count(query.aliases))
-
     query
-    |> Map.update!(:aliases, &Map.put(&1, binding, binding_index))
+    |> Map.update!(:aliases, &Map.put(&1, binding, Enum.count(query.joins)))
     |> Map.update!(:joins, fn joins ->
       update_in(
         joins,

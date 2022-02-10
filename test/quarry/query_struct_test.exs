@@ -66,7 +66,20 @@ defmodule Quarry.QueryStructTest do
   end
 
   describe "with_join_as/3" do
-    test "can add named binding to join" do
+    test "can add named binding" do
+      expected = from(p in Post, as: :post, join: a in assoc(p, :author), as: :post_author)
+
+      actual =
+        QueryStruct.with_join_as(
+          from(p in Post, as: :post, join: a in assoc(p, :author)),
+          :post_author,
+          :author
+        )
+
+      assert inspect(expected) == inspect(actual)
+    end
+
+    test "can add named binding to join with other unnamed bindings" do
       expected =
         from(p in Post,
           join: a in assoc(p, :author),
