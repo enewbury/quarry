@@ -13,7 +13,10 @@ defmodule Quarry do
 
   alias Quarry.{From, Filter, Load, Sort}
 
-  @type filter :: %{optional(atom()) => String.t() | number() | filter()}
+  @type operation :: :lt | :gt | :lte | :gte | :starts_with | :ends_with
+  @type filter :: %{
+          optional(atom()) => String.t() | number() | {operation(), filter()} | filter()
+        }
   @type load :: atom() | [atom() | keyword(load())]
   @type sort :: atom() | [atom() | [atom()] | {:asc | :desc, atom() | [atom()]}]
   @type opts :: [
@@ -40,8 +43,18 @@ defmodule Quarry do
   #Ecto.Query<from p0 in Quarry.Post, as: :post, join: a1 in assoc(p0, :author), as: :post_author, where: as(:post_author).publisher == ^"Publisher">
 
   # Field on nested has_many relationship
-  Quarry.build(Post, filter: %{comments: %{body: "comment body"}})
+  iex> Quarry.build(Quarry.Post, filter: %{comments: %{body: "comment body"}})
   #Ecto.Query<from p0 in Quarry.Post, as: :post, join: c1 in assoc(p0, :comments), as: :post_comments, where: as(:post_comments).body == ^"comment body">
+
+
+  # Can filter by explicit operation
+  iex> Quarry.build(Quarry.Post, filter: %{author: %{user: %{login_count: {:eq, 1}}}})
+  iex> Quarry.build(Quarry.Post, filter: %{author: %{user: %{login_count: {:lt, 1}}}})
+  iex> Quarry.build(Quarry.Post, filter: %{author: %{user: %{login_count: {:gt, 1}}}})
+  iex> Quarry.build(Quarry.Post, filter: %{author: %{user: %{login_count: {:lte, 1}}}})
+  iex> Quarry.build(Quarry.Post, filter: %{author: %{user: %{login_count: {:gte, 1}}}})
+  iex> Quarry.build(Quarry.Post, filter: %{title: {:starts_with, "How to"}})
+  iex> Quarry.build(Quarry.Post, filter: %{title: {:ends_with, "learn vim"}})
   ```
 
   ### Load examples

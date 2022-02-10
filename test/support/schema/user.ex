@@ -3,5 +3,6 @@ defmodule Quarry.User do
 
   schema "users" do
     field(:name, :string)
+    field(:login_count, :integer)
   end
 end

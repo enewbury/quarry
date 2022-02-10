@@ -12,7 +12,6 @@ defmodule Quarry.Join do
       query =
         query
         |> Ecto.Query.join(:inner, [{^parent_binding, p}], child in assoc(p, ^assoc))
-        |> QueryStruct.with_alias(binding)
         |> QueryStruct.with_join_as(binding, assoc)
 
       {query, binding}

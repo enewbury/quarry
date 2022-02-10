@@ -100,4 +100,76 @@ defmodule Quarry.FilterTest do
     actual = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
   end
+
+  test "can filter by less than" do
+    expected =
+      from(p in Post,
+        as: :post,
+        join: a in assoc(p, :author),
+        as: :post_author,
+        join: u in assoc(a, :user),
+        as: :post_author_user,
+        where: as(:post_author_user).login_count < ^1
+      )
+
+    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:lt, 1}}}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter by greater than" do
+    expected =
+      from(p in Post,
+        as: :post,
+        join: a in assoc(p, :author),
+        as: :post_author,
+        join: u in assoc(a, :user),
+        as: :post_author_user,
+        where: as(:post_author_user).login_count > ^1
+      )
+
+    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:gt, 1}}}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter by greater than or equal" do
+    expected =
+      from(p in Post,
+        as: :post,
+        join: a in assoc(p, :author),
+        as: :post_author,
+        join: u in assoc(a, :user),
+        as: :post_author_user,
+        where: as(:post_author_user).login_count >= ^1
+      )
+
+    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:gte, 1}}}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter by less than or equal" do
+    expected =
+      from(p in Post,
+        as: :post,
+        join: a in assoc(p, :author),
+        as: :post_author,
+        join: u in assoc(a, :user),
+        as: :post_author_user,
+        where: as(:post_author_user).login_count <= ^1
+      )
+
+    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:lte, 1}}}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter by starts with" do
+    expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"How to%"))
+    actual = Quarry.build(Post, filter: %{title: {:starts_with, "How to"}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter by ends with" do
+    expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"%learn vim"))
+    actual = Quarry.build(Post, filter: %{title: {:ends_with, "learn vim"}})
+    assert inspect(actual) == inspect(expected)
+  end
 end

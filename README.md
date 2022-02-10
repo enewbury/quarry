@@ -44,7 +44,7 @@ end
 ## Example
 
 ```elixir
-filter = %{title: "Hello", author: %{name: "John Doe"}}
+filter = %{title: "Hello", author: %{name: {:starts_with, "John"}}}
 load = [:author, comments: :user]
 sort = [[:author, :publisher], :title]
 limit = 10
