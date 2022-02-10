@@ -10,16 +10,16 @@ defmodule Quarry.QueryStruct do
     Map.update!(query, :preloads, &put_in(&1, path, subquery))
   end
 
-  def with_alias(query, binding) do
-    Map.update!(query, :aliases, &Map.put(&1, binding, Enum.count(&1)))
-  end
-
   def with_from_as(query, binding) do
-    Map.update!(query, :from, &Map.put(&1, :as, binding))
+    query
+    |> Map.update!(:aliases, &Map.put(&1, binding, 0))
+    |> Map.update!(:from, &Map.put(&1, :as, binding))
   end
 
   def with_join_as(query, binding, assoc) do
-    Map.update!(query, :joins, fn joins ->
+    query
+    |> Map.update!(:aliases, &Map.put(&1, binding, Enum.count(query.joins)))
+    |> Map.update!(:joins, fn joins ->
       update_in(
         joins,
         [Access.filter(&match?(%{assoc: {_, ^assoc}}, &1))],

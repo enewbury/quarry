@@ -12,12 +12,9 @@ defmodule Quarry.From do
         do: raw_binding,
         else: String.to_atom("#{bind_prefix}_#{raw_binding}")
 
-        Ecto.Query.from(p in schema) 
-        |> QueryStruct.with_alias(binding) |> QueryStruct.with_from_as(binding)
+    Ecto.Query.from(p in schema) |> QueryStruct.with_from_as(binding)
   end
 
   def get_root_binding(query), do: query.from.as
   def get_root_schema(query), do: elem(query.from.source, 1)
-
-
 end

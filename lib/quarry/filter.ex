@@ -39,12 +39,45 @@ defmodule Quarry.Filter do
     end
   end
 
-  defp filter_key({field_name, value}, query, binding, schema, join_deps) do
+  defp filter_key({field_name, value}, query, binding, schema, join_deps)
+       when not is_tuple(value) do
+    filter_key({field_name, {:eq, value}}, query, binding, schema, join_deps)
+  end
+
+  defp filter_key({field_name, {operation, value}}, query, binding, schema, join_deps) do
     if field_name in schema.__schema__(:fields) do
       {query, join_binding} = Join.join_dependencies(query, binding, join_deps)
-      Ecto.Query.where(query, field(as(^join_binding), ^field_name) == ^value)
+      filter_by_operation(query, join_binding, field_name, operation, value)
     else
       query
     end
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :eq, value) do
+    Ecto.Query.where(query, field(as(^join_binding), ^field_name) == ^value)
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :lt, value) do
+    Ecto.Query.where(query, field(as(^join_binding), ^field_name) < ^value)
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :gt, value) do
+    Ecto.Query.where(query, field(as(^join_binding), ^field_name) > ^value)
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :lte, value) do
+    Ecto.Query.where(query, field(as(^join_binding), ^field_name) <= ^value)
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :gte, value) do
+    Ecto.Query.where(query, field(as(^join_binding), ^field_name) >= ^value)
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :starts_with, value) do
+    Ecto.Query.where(query, ilike(field(as(^join_binding), ^field_name), ^"#{value}%"))
+  end
+
+  defp filter_by_operation(query, join_binding, field_name, :ends_with, value) do
+    Ecto.Query.where(query, ilike(field(as(^join_binding), ^field_name), ^"%#{value}"))
   end
 end
