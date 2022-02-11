@@ -17,6 +17,10 @@ defmodule Quarry.Filter do
     Enum.reduce(filters, query, &filter_key(&1, &2, binding, schema, join_deps))
   end
 
+  defp filter_key({field_name, %{op: op, value: value}}, query, binding, schema, join_deps) do
+    filter_key({field_name, {op, value}}, query, binding, schema, join_deps)
+  end
+
   defp filter_key({field_name, child_filter}, query, binding, schema, join_deps)
        when is_map(child_filter) do
     assocations = schema.__schema__(:associations)
