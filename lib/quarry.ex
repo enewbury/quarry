@@ -14,8 +14,11 @@ defmodule Quarry do
   alias Quarry.{From, Filter, Load, Sort}
 
   @type operation :: :lt | :gt | :lte | :gte | :starts_with | :ends_with
+  @type filter_param :: String.t() | number
+  @type tuple_filter_param :: {operation(), filter_param()}
+  @type map_filter_param :: %{op: operation(), value: filter_param()}
   @type filter :: %{
-          optional(atom()) => String.t() | number() | {operation(), filter()} | filter()
+          optional(atom()) => filter_param() | tuple_filter_param() | map_filter_param()
         }
   @type load :: atom() | [atom() | keyword(load())]
   @type sort :: atom() | [atom() | [atom()] | {:asc | :desc, atom() | [atom()]}]
@@ -55,6 +58,10 @@ defmodule Quarry do
   iex> Quarry.build(Quarry.Post, filter: %{author: %{user: %{login_count: {:gte, 1}}}})
   iex> Quarry.build(Quarry.Post, filter: %{title: {:starts_with, "How to"}})
   iex> Quarry.build(Quarry.Post, filter: %{title: {:ends_with, "learn vim"}})
+
+  #Can filter using map notation for graphQL compatability
+  iex> Quarry.build(Quarry.Post, filter: %{title: %{op: :eq, value: "Value"}})
+  #Ecto.Query<from p0 in Quarry.Post, as: :post, where: as(:post).title == ^"Value">
   ```
 
   ### Load examples

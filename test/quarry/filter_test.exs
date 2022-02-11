@@ -172,4 +172,10 @@ defmodule Quarry.FilterTest do
     actual = Quarry.build(Post, filter: %{title: {:ends_with, "learn vim"}})
     assert inspect(actual) == inspect(expected)
   end
+
+  test "can filter using map style" do
+    expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"%learn vim"))
+    actual = Quarry.build(Post, filter: %{title: %{op: :ends_with, value: "learn vim"}})
+    assert inspect(actual) == inspect(expected)
+  end
 end

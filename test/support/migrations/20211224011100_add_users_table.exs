@@ -3,7 +3,7 @@ defmodule Quarry.Repo.Migrations.AddUsersTable do
 
   def change do
     create table("users") do
-      add :name, :string
+      add(:name, :string)
     end
   end
 end
