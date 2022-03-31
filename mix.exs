@@ -12,6 +12,7 @@ defmodule Quarry.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases(),
 
       # Docs
       name: "Quarry",
@@ -35,7 +36,7 @@ defmodule Quarry.MixProject do
     [
       {:ecto, "~> 3.5"},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
-      {:ecto_sql, "~> 3.5", only: [:test]},
+      {:ecto_sql, "~> 3.5", only: [:dev, :test]},
       {:postgrex, "~> 0.14", only: [:test]},
       {:ex_machina, "~> 2.3", only: [:test]}
     ]
@@ -43,6 +44,12 @@ defmodule Quarry.MixProject do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp aliases do
+    [
+      "ecto.reset": ["ecto.drop", "ecto.create", "ecto.migrate"]
+    ]
+  end
 
   defp package() do
     [
