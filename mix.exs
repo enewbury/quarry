@@ -14,6 +14,15 @@ defmodule Quarry.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
       test_coverage: [tool: ExCoveralls],
+<<<<<<< HEAD
+=======
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
+>>>>>>> 8ab62d9 (add code coverage)
 
       # Docs
       name: "Quarry",
@@ -40,7 +49,12 @@ defmodule Quarry.MixProject do
       {:ecto_sql, "~> 3.5", only: [:dev, :test]},
       {:postgrex, "~> 0.14", only: [:test]},
       {:ex_machina, "~> 2.3", only: [:test]},
+<<<<<<< HEAD
       {:excoveralls, "~> 0.10", only: :test}
+=======
+      {:excoveralls, "~> 0.10", only: :test},
+      {:absinthe, "~> 1.5.0", only: [:test]}
+>>>>>>> 8ab62d9 (add code coverage)
     ]
   end
 

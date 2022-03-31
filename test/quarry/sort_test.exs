@@ -48,6 +48,14 @@ defmodule Quarry.SortTest do
     assert inspect(actual) == inspect(expected)
   end
 
+  test "returns error for bad association", %{base: base} do
+    expected = from(p in Post, as: :post)
+
+    assert {actual, [error]} = Sort.build(base, [[:author, :fake_assoc, :field]])
+    assert inspect(actual) == inspect(expected)
+    assert %{type: :sort, path: [:author, :fake_assoc]} = error
+  end
+
   test "can sort by base and nested field", %{base: base} do
     expected =
       from(p in Post,
