@@ -42,7 +42,9 @@ jobs:
       uses: actions/cache@v2
       id: cache-elixir-deps #id to use in retrieve action
       with:
-        path: [deps,_build]
+        path: |
+          deps
+          _build
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
 
     - name: Install Dependencies
