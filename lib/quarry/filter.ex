@@ -6,82 +6,90 @@ defmodule Quarry.Filter do
 
   @type filter :: %{optional(atom()) => String.t() | number() | filter()}
 
-  @spec build(Ecto.Query.t(), Quarry.filter()) :: Ecto.Query.t()
-  def build(query, filters) do
+  @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.filter()) ::
+          {Ecto.Query.t(), [Quarry.error()]}
+  def build({query, errors}, filters) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
-    filter(query, root_binding, schema, [], filters)
+
+    filter({query, errors}, filters, binding: root_binding, schema: schema, path: [])
   end
 
-  defp filter(query, binding, schema, join_deps, filters) do
-    Enum.reduce(filters, query, &filter_key(&1, &2, binding, schema, join_deps))
+  defp filter(acc, filters, state) do
+    Enum.reduce(filters, acc, &maybe_filter_field(&1, &2, state))
   end
 
-  defp filter_key({field_name, %{op: op, value: value}}, query, binding, schema, join_deps) do
-    filter_key({field_name, {op, value}}, query, binding, schema, join_deps)
-  end
+  defp maybe_filter_field({field_name, value} = entry, {query, errors}, state) do
+    fields = state[:schema].__schema__(:fields)
+    association = state[:schema].__schema__(:associations)
 
-  defp filter_key({field_name, child_filter}, query, binding, schema, join_deps)
-       when is_map(child_filter) do
-    assocations = schema.__schema__(:associations)
-
-    if field_name in assocations do
-      child_schema = schema.__schema__(:association, field_name).related
-      filter(query, binding, child_schema, [field_name | join_deps], child_filter)
+    if (is_map(value) && field_name in association) || field_name in fields do
+      filter_field(entry, {query, errors}, state)
     else
-      query
+      error = %{
+        type: :filter,
+        path: Enum.reverse([field_name | state[:path]]),
+        message:
+          "Quarry couldn't find field \"#{field_name}\" on Ecto schema \"#{state[:schema]}\""
+      }
+
+      {query, [error | errors]}
     end
   end
 
-  defp filter_key({field_name, values}, query, binding, schema, join_deps)
-       when is_list(values) do
-    if field_name in schema.__schema__(:fields) do
-      {query, join_binding} = Join.join_dependencies(query, binding, join_deps)
-      Ecto.Query.where(query, field(as(^join_binding), ^field_name) in ^values)
-    else
-      query
-    end
+  defp filter_field({field_name, child_filter}, acc, state) when is_map(child_filter) do
+    child_schema = state[:schema].__schema__(:association, field_name).related
+
+    state =
+      state
+      |> Keyword.put(:schema, child_schema)
+      |> Keyword.update!(:path, &List.insert_at(&1, 0, field_name))
+
+    filter(acc, child_filter, state)
   end
 
-  defp filter_key({field_name, value}, query, binding, schema, join_deps)
-       when not is_tuple(value) do
-    filter_key({field_name, {:eq, value}}, query, binding, schema, join_deps)
+  defp filter_field({field_name, values}, {query, errors}, state) when is_list(values) do
+    {query, join_binding} = Join.join_dependencies(query, state[:binding], state[:path])
+    query = Ecto.Query.where(query, field(as(^join_binding), ^field_name) in ^values)
+    {query, errors}
   end
 
-  defp filter_key({field_name, {operation, value}}, query, binding, schema, join_deps) do
-    if field_name in schema.__schema__(:fields) do
-      {query, join_binding} = Join.join_dependencies(query, binding, join_deps)
-      filter_by_operation(query, join_binding, field_name, operation, value)
-    else
-      query
-    end
+  defp filter_field({field_name, value}, acc, state) when not is_tuple(value) do
+    filter_field({field_name, {:eq, value}}, acc, state)
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :eq, value) do
+  defp filter_field({field_name, {operation, value}}, {query, errors}, state) do
+    query
+    |> Join.join_dependencies(state[:binding], state[:path])
+    |> filter_by_operation(field_name, operation, value)
+    |> then(&{&1, errors})
+  end
+
+  defp filter_by_operation({query, join_binding}, field_name, :eq, value) do
     Ecto.Query.where(query, field(as(^join_binding), ^field_name) == ^value)
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :lt, value) do
+  defp filter_by_operation({query, join_binding}, field_name, :lt, value) do
     Ecto.Query.where(query, field(as(^join_binding), ^field_name) < ^value)
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :gt, value) do
+  defp filter_by_operation({query, join_binding}, field_name, :gt, value) do
     Ecto.Query.where(query, field(as(^join_binding), ^field_name) > ^value)
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :lte, value) do
+  defp filter_by_operation({query, join_binding}, field_name, :lte, value) do
     Ecto.Query.where(query, field(as(^join_binding), ^field_name) <= ^value)
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :gte, value) do
+  defp filter_by_operation({query, join_binding}, field_name, :gte, value) do
     Ecto.Query.where(query, field(as(^join_binding), ^field_name) >= ^value)
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :starts_with, value) do
+  defp filter_by_operation({query, join_binding}, field_name, :starts_with, value) do
     Ecto.Query.where(query, ilike(field(as(^join_binding), ^field_name), ^"#{value}%"))
   end
 
-  defp filter_by_operation(query, join_binding, field_name, :ends_with, value) do
+  defp filter_by_operation({query, join_binding}, field_name, :ends_with, value) do
     Ecto.Query.where(query, ilike(field(as(^join_binding), ^field_name), ^"%#{value}"))
   end
 end

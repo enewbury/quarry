@@ -6,7 +6,7 @@ defmodule Quarry.FilterTest do
   alias Quarry.{Post, Filter}
 
   setup do
-    %{base: from(p in Post, as: :post)}
+    %{base: {from(p in Post, as: :post), []}}
   end
 
   test "can filter by top level props", %{base: base} do
@@ -19,14 +19,18 @@ defmodule Quarry.FilterTest do
       )
 
     filter = %{title: "title", body: "body"}
-    assert actual = Filter.build(base, filter)
+    assert {actual, []} = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
   end
 
-  test "ignores bad top level props", %{base: base} do
+  test "ignores bad top level props, and returns error", %{base: base} do
     filter = %{bad: "prop", fake: ["option"], fake2: %{name: "John"}}
-    assert actual = Filter.build(base, filter)
-    assert inspect(actual) == inspect(base)
+    {actual, errors} = Filter.build(base, filter)
+
+    assert inspect(actual) == inspect(elem(base, 0))
+
+    assert [%{path: [:bad]}, %{path: [:fake]}, %{path: [:fake2]}] =
+             Enum.sort_by(errors, & &1.message)
   end
 
   test "can filter by joined props", %{base: base} do
@@ -40,15 +44,16 @@ defmodule Quarry.FilterTest do
       )
 
     filter = %{author: %{publisher: "publisher"}}
-    assert actual = Filter.build(base, filter)
+    assert {actual, []} = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
   end
 
-  test "ignores bad nested props", %{base: base} do
+  test "ignores bad nested props, and returns error", %{base: base} do
     expected = from(p in Post, as: :post)
     filter = %{author: %{bad: "badprop"}}
-    actual = Filter.build(base, filter)
+    {actual, [error]} = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
+    assert %{path: [:author, :bad]} = error
   end
 
   test "can filter at multiple levels without duplicate join", %{base: base} do
@@ -65,7 +70,7 @@ defmodule Quarry.FilterTest do
       )
 
     filter = %{author: %{publisher: "publisher", user: %{name: "john"}}}
-    assert actual = Filter.build(base, filter)
+    assert {actual, []} = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -83,7 +88,7 @@ defmodule Quarry.FilterTest do
       )
 
     filter = %{author: %{publisher: ["publisher1", "publisher2"], user: %{name: "john"}}}
-    actual = Filter.build(base, filter)
+    {actual, []} = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -97,11 +102,11 @@ defmodule Quarry.FilterTest do
       )
 
     filter = %{comments: %{body: "comment"}}
-    actual = Filter.build(base, filter)
+    {actual, []} = Filter.build(base, filter)
     assert inspect(actual) == inspect(expected)
   end
 
-  test "can filter by less than" do
+  test "can filter by less than", %{base: base} do
     expected =
       from(p in Post,
         as: :post,
@@ -112,11 +117,11 @@ defmodule Quarry.FilterTest do
         where: as(:post_author_user).login_count < ^1
       )
 
-    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:lt, 1}}}})
+    {actual, []} = Filter.build(base, %{author: %{user: %{login_count: {:lt, 1}}}})
     assert inspect(actual) == inspect(expected)
   end
 
-  test "can filter by greater than" do
+  test "can filter by greater than", %{base: base} do
     expected =
       from(p in Post,
         as: :post,
@@ -127,11 +132,11 @@ defmodule Quarry.FilterTest do
         where: as(:post_author_user).login_count > ^1
       )
 
-    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:gt, 1}}}})
+    {actual, []} = Filter.build(base, %{author: %{user: %{login_count: {:gt, 1}}}})
     assert inspect(actual) == inspect(expected)
   end
 
-  test "can filter by greater than or equal" do
+  test "can filter by greater than or equal", %{base: base} do
     expected =
       from(p in Post,
         as: :post,
@@ -142,11 +147,11 @@ defmodule Quarry.FilterTest do
         where: as(:post_author_user).login_count >= ^1
       )
 
-    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:gte, 1}}}})
+    {actual, []} = Filter.build(base, %{author: %{user: %{login_count: {:gte, 1}}}})
     assert inspect(actual) == inspect(expected)
   end
 
-  test "can filter by less than or equal" do
+  test "can filter by less than or equal", %{base: base} do
     expected =
       from(p in Post,
         as: :post,
@@ -157,25 +162,19 @@ defmodule Quarry.FilterTest do
         where: as(:post_author_user).login_count <= ^1
       )
 
-    actual = Quarry.build(Post, filter: %{author: %{user: %{login_count: {:lte, 1}}}})
+    {actual, []} = Filter.build(base, %{author: %{user: %{login_count: {:lte, 1}}}})
     assert inspect(actual) == inspect(expected)
   end
 
-  test "can filter by starts with" do
+  test "can filter by starts with", %{base: base} do
     expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"How to%"))
-    actual = Quarry.build(Post, filter: %{title: {:starts_with, "How to"}})
+    {actual, []} = Filter.build(base, %{title: {:starts_with, "How to"}})
     assert inspect(actual) == inspect(expected)
   end
 
-  test "can filter by ends with" do
+  test "can filter by ends with", %{base: base} do
     expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"%learn vim"))
-    actual = Quarry.build(Post, filter: %{title: {:ends_with, "learn vim"}})
-    assert inspect(actual) == inspect(expected)
-  end
-
-  test "can filter using map style" do
-    expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"%learn vim"))
-    actual = Quarry.build(Post, filter: %{title: %{op: :ends_with, value: "learn vim"}})
+    {actual, []} = Filter.build(base, %{title: {:ends_with, "learn vim"}})
     assert inspect(actual) == inspect(expected)
   end
 end

@@ -3,10 +3,12 @@ defmodule Quarry.QueryStruct do
 
   def add_assoc(query, path, join_binding) do
     binding_index = query.aliases[join_binding]
+    path = Enum.intersperse(path, Access.elem(1))
     Map.update!(query, :assocs, &put_in(&1, path, {binding_index, []}))
   end
 
   def add_preload(query, path, subquery) do
+    path = Enum.map(path, &Quarry.Utils.access_keyword(&1, []))
     Map.update!(query, :preloads, &put_in(&1, path, subquery))
   end
 

@@ -3,7 +3,7 @@ defmodule Quarry.QueryStructTest do
   doctest Quarry.Filter
 
   import Ecto.Query
-  alias Quarry.{Comment, Post, QueryStruct}
+  alias Quarry.{Author, Comment, Post, QueryStruct}
 
   describe "add_assoc/3" do
     test "can add when no assoc present" do
@@ -34,7 +34,7 @@ defmodule Quarry.QueryStructTest do
           preload: [author: {a, user: u}]
         )
 
-      actual = QueryStruct.add_assoc(base, [:author, Access.elem(1), :user], :post_author_user)
+      actual = QueryStruct.add_assoc(base, [:author, :user], :post_author_user)
       assert inspect(actual) == inspect(expected)
     end
   end
@@ -53,6 +53,22 @@ defmodule Quarry.QueryStructTest do
       subquery = from(c in Comment)
       expected = from(b in base, preload: [comments: ^subquery])
       actual = QueryStruct.add_preload(base, [:comments], subquery)
+      assert actual == expected
+    end
+
+    test "works for nested has_many association" do
+      base =
+        from(a in Author,
+          as: :author,
+          join: u in assoc(a, :user),
+          as: :author_user,
+          join: c in assoc(u, :comments),
+          as: :author_user_comments
+        )
+
+      subquery = from(c in Comment)
+      expected = from(b in base, preload: [user: [comments: ^subquery]])
+      actual = QueryStruct.add_preload(base, [:user, :comments], subquery)
       assert actual == expected
     end
   end

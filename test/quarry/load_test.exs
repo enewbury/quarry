@@ -7,7 +7,7 @@ defmodule Quarry.LoadTest do
   alias Quarry.{Comment, Post, Load}
 
   setup do
-    %{base: from(p in Post, as: :post)}
+    %{base: {from(p in Post, as: :post), []}}
   end
 
   test "can preload belongs_to", %{base: base} do
@@ -21,7 +21,7 @@ defmodule Quarry.LoadTest do
       )
 
     load = [:author]
-    actual = Load.build(base, load)
+    {actual, []} = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -38,7 +38,7 @@ defmodule Quarry.LoadTest do
       )
 
     load = [author: :user]
-    actual = Load.build(base, load)
+    {actual, []} = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -53,7 +53,7 @@ defmodule Quarry.LoadTest do
       )
 
     load = [:comments]
-    actual = Load.build(base, load)
+    {actual, []} = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -78,7 +78,7 @@ defmodule Quarry.LoadTest do
       )
 
     load = [:author, comments: :user]
-    actual = Load.build(base, load)
+    {actual, []} = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 
@@ -99,7 +99,7 @@ defmodule Quarry.LoadTest do
       )
 
     load = [comments: [filter: %{body: "comment"}, load: [], limit: 1, offset: 1]]
-    actual = Load.build(base, load)
+    {actual, []} = Load.build(base, load)
     assert inspect(actual) == inspect(expected)
   end
 end
