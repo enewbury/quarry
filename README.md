@@ -1,11 +1,11 @@
 # Quarry
 
-[![Build Status](https://github.com/enewbury/quarry/workflows/ci/badge.svg)](https://github.com/enewbury/quarry/actions)
+[![Build Status](https://github.com/enewbury/quarry/workflows/test/badge.svg)](https://github.com/enewbury/quarry/actions)
+[![Coverage Status](https://coveralls.io/repos/enewbury/quarry/badge.svg?branch=main)](https://coveralls.io/r/enewbury/quarry?branch=main)
 [![hex.pm version](https://img.shields.io/hexpm/v/quarry.svg)](https://hex.pm/packages/quarry)
 [![hex.pm downloads](https://img.shields.io/hexpm/dt/quarry.svg)](https://hex.pm/packages/quarry)
 [![hex.pm license](https://img.shields.io/hexpm/l/quarry.svg)](https://github.com/enewbury/quarry/blob/main/LICENSE)
 [![Last Updated](https://img.shields.io/github/last-commit/enewbury/quarry.svg)](https://github.com/enewbury/quarry/commits/main)
-<!-- [![Coverage Status](https://coveralls.io/repos/enewbury/quarry/badge.svg?branch=main)](https://coveralls.io/r/enewbury/quarry?branch=main) -->
 
 
 A data-driven Ecto Query builder for nested associations.

@@ -1,4 +1,4 @@
-name: ci 
+name: test 
 
 on:
   push:
@@ -12,6 +12,7 @@ env:
 
 jobs:
   build:
+    name: Run Tests
     runs-on: ubuntu-latest
 
     strategy:
@@ -59,5 +60,5 @@ jobs:
       run: mix ecto.reset
 
     - name: Run Tests
-      run: mix test
+      run: mix coveralls.github
 

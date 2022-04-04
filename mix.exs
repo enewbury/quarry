@@ -13,6 +13,7 @@ defmodule Quarry.MixProject do
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
+      test_coverage: [tool: ExCoveralls],
 
       # Docs
       name: "Quarry",
@@ -38,7 +39,8 @@ defmodule Quarry.MixProject do
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:ecto_sql, "~> 3.5", only: [:dev, :test]},
       {:postgrex, "~> 0.14", only: [:test]},
-      {:ex_machina, "~> 2.3", only: [:test]}
+      {:ex_machina, "~> 2.3", only: [:test]},
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 
