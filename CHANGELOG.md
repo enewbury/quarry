@@ -4,6 +4,8 @@
 <!-- next-header -->
 
 ## [Unreleased] - ReleaseDate
+
+## [0.3.0] - 2022-4-4
 ### Added
 * Preserve errors when using Quarry.build vs Quarry.build!
 * CI updates
@@ -17,4 +19,5 @@
 * Initial release
 
 <!-- next-url -->
-[Unreleased]: https://github.com/enewbury/quarry/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/enewbury/quarry/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/enewbury/quarry/compare/v0.2.1...v0.3.0
