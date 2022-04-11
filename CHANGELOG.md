@@ -4,6 +4,8 @@
 <!-- next-header -->
 
 ## [Unreleased] - ReleaseDate
+
+## [0.3.1] - 2022-4-11
 Fix: Nested filter breaks without load option
 Add: Included `load_path` on sort and filter error types to show which subquery these errors belong to
 
@@ -21,5 +23,6 @@ Add: Included `load_path` on sort and filter error types to show which subquery 
 * Initial release
 
 <!-- next-url -->
-[Unreleased]: https://github.com/enewbury/quarry/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/enewbury/quarry/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/enewbury/quarry/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/enewbury/quarry/compare/v0.2.1...v0.3.0
