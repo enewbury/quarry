@@ -39,7 +39,7 @@ defmodule Quarry.MixProject do
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:version_release, "~> 0.1.0", only: :dev, runtime: false},
       {:ecto_sql, "~> 3.5", only: [:dev, :test]},
-      {:postgrex, "~> 0.14", only: [:test]},
+      {:ecto_sqlite3, "~> 0.7", only: :test},
       {:ex_machina, "~> 2.3", only: [:test]},
       {:excoveralls, "~> 0.10", only: :test}
     ]

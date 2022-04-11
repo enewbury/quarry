@@ -8,29 +8,37 @@ defmodule Quarry.Sort do
 
   @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.sort()) ::
           {Ecto.Query.t(), [Qurry.error()]}
-  def build({query, errors}, keys) do
+  def build({query, errors}, keys, load_path \\ []) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
-    sort({query, errors}, root_binding, schema, [], keys)
+
+    state = [
+      schema: schema,
+      binding: root_binding,
+      load_path: load_path
+    ]
+
+    sort({query, errors}, [], keys, state)
   end
 
-  defp sort(acc, binding, schema, join_deps, keys) when is_list(keys) do
+  defp sort(acc, join_deps, keys, state) when is_list(keys) do
     Enum.reduce(
       keys,
       acc,
       fn entry, {query, errors} ->
         sort_key(entry, join_deps,
           query: query,
-          schema: schema,
-          binding: binding,
+          schema: state[:schema],
+          binding: state[:binding],
+          load_path: state[:load_path],
           errors: errors
         )
       end
     )
   end
 
-  defp sort(acc, binding, schema, join_deps, key),
-    do: sort(acc, binding, schema, join_deps, [key])
+  defp sort(acc, join_deps, key, state),
+    do: sort(acc, join_deps, [key], state)
 
   defp sort_key({dir, path}, join_deps, state), do: sort_key(path, dir, join_deps, state)
   defp sort_key(path, join_deps, state), do: sort_key(path, :asc, join_deps, state)
@@ -47,7 +55,7 @@ defmodule Quarry.Sort do
       state = Keyword.put(state, :schema, child_schema)
       sort_key(path, dir, [assoc | join_deps], state)
     else
-      error = build_error(assoc, join_deps, state[:schema])
+      error = build_error(assoc, join_deps, state)
       {state[:query], [error | state[:errors]]}
     end
   end
@@ -58,16 +66,17 @@ defmodule Quarry.Sort do
       query = Ecto.Query.order_by(query, [{^dir, field(as(^join_binding), ^field_name)}])
       {query, state[:errors]}
     else
-      error = build_error(field_name, join_deps, state[:schema])
+      error = build_error(field_name, join_deps, state)
       {state[:query], [error | state[:errors]]}
     end
   end
 
-  defp build_error(field, path, schema) do
+  defp build_error(field, path, state) do
     %{
       type: :sort,
       path: Enum.reverse([field | path]),
-      message: "Quarry couldn't find field \"#{field}\" on Ecto schema \"#{schema}\""
+      load_path: Enum.reverse(state[:load_path]),
+      message: "Quarry couldn't find field \"#{field}\" on Ecto schema \"#{state[:schema]}\""
     }
   end
 end

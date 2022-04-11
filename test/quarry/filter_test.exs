@@ -56,6 +56,11 @@ defmodule Quarry.FilterTest do
     assert %{path: [:author, :bad]} = error
   end
 
+  test "returns passed in load_path on errors", %{base: base} do
+    {_, [error]} = Filter.build(base, %{author: %{bad: "test"}}, [:post, :comments])
+    assert %{type: :filter, path: [:author, :bad], load_path: [:comments, :post]} = error
+  end
+
   test "can filter at multiple levels without duplicate join", %{base: base} do
     expected =
       from(

@@ -8,9 +8,7 @@ config :quarry,
 
 config :quarry, Quarry.Repo,
   log: :debug,
-  username: "postgres",
-  password: "postgres",
-  database: "quarry_test",
-  hostname: "localhost",
+  adapter: Ecto.Adapters.SQLite3,
+  database: "#{Mix.env()}.db",
   pool: Ecto.Adapters.SQL.Sandbox,
   priv: "test/support"

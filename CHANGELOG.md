@@ -4,6 +4,8 @@
 <!-- next-header -->
 
 ## [Unreleased] - ReleaseDate
+Fix: Nested filter breaks without load option
+Add: Included `load_path` on sort and filter error types to show which subquery these errors belong to
 
 ## [0.3.0] - 2022-4-4
 ### Added

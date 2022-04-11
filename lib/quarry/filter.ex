@@ -6,13 +6,18 @@ defmodule Quarry.Filter do
 
   @type filter :: %{optional(atom()) => String.t() | number() | filter()}
 
-  @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.filter()) ::
+  @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.filter(), [atom()]) ::
           {Ecto.Query.t(), [Quarry.error()]}
-  def build({query, errors}, filters) do
+  def build({query, errors}, filters, load_path \\ []) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
 
-    filter({query, errors}, filters, binding: root_binding, schema: schema, path: [])
+    filter({query, errors}, filters,
+      binding: root_binding,
+      schema: schema,
+      path: [],
+      load_path: load_path
+    )
   end
 
   defp filter(acc, filters, state) do
@@ -26,15 +31,17 @@ defmodule Quarry.Filter do
     if (is_map(value) && field_name in association) || field_name in fields do
       filter_field(entry, {query, errors}, state)
     else
-      error = %{
-        type: :filter,
-        path: Enum.reverse([field_name | state[:path]]),
-        message:
-          "Quarry couldn't find field \"#{field_name}\" on Ecto schema \"#{state[:schema]}\""
-      }
-
-      {query, [error | errors]}
+      {query, [build_error(field_name, state) | errors]}
     end
+  end
+
+  defp build_error(field_name, state) do
+    %{
+      type: :filter,
+      path: Enum.reverse([field_name | state[:path]]),
+      load_path: Enum.reverse(state[:load_path]),
+      message: "Quarry couldn't find field \"#{field_name}\" on Ecto schema \"#{state[:schema]}\""
+    }
   end
 
   defp filter_field({field_name, child_filter}, acc, state) when is_map(child_filter) do

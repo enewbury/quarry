@@ -128,6 +128,7 @@ defmodule Quarry do
   def build(schema, opts \\ []) do
     default_opts = %{
       binding_prefix: nil,
+      load_path: [],
       filter: %{},
       load: [],
       sort: [],
@@ -139,9 +140,9 @@ defmodule Quarry do
 
     {schema, []}
     |> From.build(opts.binding_prefix)
-    |> Filter.build(opts.filter)
-    |> Load.build(opts.load)
-    |> Sort.build(opts.sort)
+    |> Filter.build(opts.filter, opts.load_path)
+    |> Load.build(opts.load, opts.load_path)
+    |> Sort.build(opts.sort, opts.load_path)
     |> limit(opts.limit)
     |> offset(opts.offset)
   end
