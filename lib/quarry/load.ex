@@ -4,13 +4,15 @@ defmodule Quarry.Load do
 
   alias Quarry.{Join, From, QueryStruct}
 
-  @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.load()) ::
+  @quarry_opts [:filter, :load, :sort, :limit, :offset]
+
+  @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.load()[atom()]) ::
           {Ecto.Query.t(), [Quarry.error()]}
-  def build({query, errors}, load_params) do
+  def build({query, errors}, load_params, load_path \\ []) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
 
-    state = [binding: root_binding, schema: schema, path: []]
+    state = [binding: root_binding, schema: schema, local_path: [], path: load_path]
 
     load({query, errors}, load_params, state)
   end
@@ -31,56 +33,61 @@ defmodule Quarry.Load do
     if association do
       preload_tree({query, errors}, association, children, state)
     else
-      path =
-        state[:path]
-        |> List.insert_at(0, assoc)
-        |> Enum.reverse()
-
-      error = %{
-        type: :load,
-        path: path,
-        message:
-          "Quarry couldn't find filtering field \"#{Enum.join(path, ".")}\" on Ecto schema \"#{state[:schema]}\""
-      }
-
-      {query, [error | errors]}
+      {query, [build_error(assoc, state) | errors]}
     end
+  end
+
+  defp build_error(field_name, state) do
+    %{
+      type: :load,
+      path: Enum.reverse([field_name | state[:local_path] ++ state[:path]]),
+      message: "Quarry couldn't find field \"#{field_name}\" on Ecto schema \"#{state[:schema]}\""
+    }
   end
 
   defp preload_tree({query, errors}, %{cardinality: :one} = association, children, state) do
     %{queryable: child_schema, field: assoc} = association
     binding = Keyword.get(state, :binding)
-    path = [assoc | state[:path]]
+    local_path = [assoc | state[:local_path]]
 
     {query, join_binding} = Join.with_join(query, binding, assoc)
 
     query
-    |> QueryStruct.add_assoc(Enum.reverse(path), join_binding)
+    |> QueryStruct.add_assoc(Enum.reverse(local_path), join_binding)
     |> then(&{&1, errors})
-    |> load(children, binding: join_binding, schema: child_schema, path: path)
+    |> load(children,
+      binding: join_binding,
+      schema: child_schema,
+      local_path: local_path,
+      path: state[:path]
+    )
   end
 
   defp preload_tree({query, errors}, %{cardinality: :many} = association, children, state) do
     %{queryable: child_schema, field: assoc} = association
     binding = Keyword.get(state, :binding)
 
-    ordered_path =
-      state[:path]
-      |> List.insert_at(0, assoc)
-      |> Enum.reverse()
-
-    children = List.wrap(children)
-
-    {subquery, sub_errors} =
-      Quarry.build(child_schema,
-        filter: Keyword.get(children, :filter, %{}),
-        load: Keyword.get(children, :load, children),
-        sort: Keyword.get(children, :sort, []),
-        limit: Keyword.get(children, :limit),
-        offset: Keyword.get(children, :offset),
-        binding_prefix: binding
+    quarry_opts =
+      Keyword.merge(extract_nested_opts(children),
+        binding_prefix: binding,
+        load_path: [assoc | state[:local_path] ++ state[:path]]
       )
 
-    {QueryStruct.add_preload(query, ordered_path, subquery), sub_errors ++ errors}
+    {subquery, sub_errors} = Quarry.build(child_schema, quarry_opts)
+
+    ordered_local_path = Enum.reverse([assoc | state[:local_path]])
+
+    {QueryStruct.add_preload(query, ordered_local_path, subquery), sub_errors ++ errors}
+  end
+
+  defp extract_nested_opts(children) do
+    children
+    |> List.wrap()
+    |> Enum.filter(&is_tuple(&1))
+    |> Keyword.take(@quarry_opts)
+    |> case do
+      [] -> [load: children]
+      opts -> opts
+    end
   end
 end

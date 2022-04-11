@@ -88,4 +88,19 @@ defmodule Quarry.SortTest do
     assert {actual, []} = Sort.build(base, desc: [:author, :publisher])
     assert inspect(actual) == inspect(expected)
   end
+
+  test "returns error when sorting by non-existed field", %{base: base} do
+    assert {_, [error]} = Sort.build(base, [:fake])
+    assert %{type: :sort, path: [:fake], load_path: []} = error
+  end
+
+  test "returns error when sorting by non-existed nested field", %{base: base} do
+    assert {_, [error]} = Sort.build(base, [[:author, :fake]])
+    assert %{type: :sort, path: [:author, :fake], load_path: []} = error
+  end
+
+  test "returns error and maintains load_path", %{base: base} do
+    assert {_, [error]} = Sort.build(base, [[:author, :fake]], [:post, :comments, :user])
+    assert %{type: :sort, path: [:author, :fake], load_path: [:user, :comments, :post]} = error
+  end
 end

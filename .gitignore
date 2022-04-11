@@ -27,3 +27,5 @@ quarry-*.tar
 
 # Vim swap files
 *.swp
+
+*.db*

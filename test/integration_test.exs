@@ -1,14 +1,9 @@
 defmodule Quarry.IntegrationTest do
-  use ExUnit.Case
+  use Quarry.DataCase
   doctest Quarry
 
   import Quarry.Factory
-  alias Quarry.{Context, Repo}
-
-  setup do
-    # Explicitly get a connection before each test
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
-  end
+  alias Quarry.Context
 
   test "returns empty when entities" do
     assert Context.list_posts() == []
