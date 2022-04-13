@@ -10,7 +10,9 @@
 
 A data-driven Ecto Query builder for nested associations.
 
-With specifications like GraphQL which seek to granularly fetch data as needed by a client,
+## Background
+
+With specifications like GraphQL and JsonAPI which seek to granularly fetch data as needed by a client,
 we are generally forced to either fetch more data than we need to satisfy the greatest need,
 joining in lots of data to allow filtering on nested data, or we end up limiting the functionality
 of the endpoint to a few predefined types of selections.
@@ -29,6 +31,8 @@ because it avoids pulling n\*m records into memory.
 
 When loading in nested data, you can also apply the full set of Quarry options to filter, sort, limit,
 and load the list of nested data.
+
+## Developer Notes
 
 This is an internal library and takes all options as atoms. In production, you may want to do some field authorization
 or pruning prior to passing user data into Quarry. If you are using graphql this is mostly taken care of through
@@ -49,20 +53,41 @@ def deps do
 end
 ```
 
-## Example
+## Examples
 
+Quarry has two functions `Quarry.build/2` and `Quarry.build!/2`, the later simply returning an `Ecto.Query` and the later returning a tuple with the query, and a list of errors, denoting requested associations that not found on the schemas.
+
+### Loading
 ```elixir
-filter = %{title: "Hello", author: %{name: {:starts_with, "John"}}}
-load = [:author, comments: :user]
-sort = [[:author, :publisher], :title]
-limit = 10
-offset = 20
-Quarry.build(Post, filter: filter, load: load, sort: sort, limit: limit, offset: offset)
+%Ecto.Query{} = Quarry.build(Post, load: [:author, comments: :user])
+{%Ecto.Query{}, [%{type: :load, path: _, message: _}]} = Quarry.build(Post, load: [:fake_assoc])
 ```
 
+### Filtering
+```elixir
+Quarry.build(Post, filter: %{title: "Hello", author: %{name: {:starts_with, "John"}}})
+# Filter nested lists
+Quarry.build(Post, load: [comments: %{body: {:starts_with, "Beginning"}}}])
+```
+
+### Sorting
+```elixir
+Quarry.build(Post, sort: [[:author, :publisher], :title])
+```
+
+### Limit and Offset
+```elixir
+Quarry.build(Post, limit: 10, offset: 20)
+```
 See Docs for a more exhaustive list of examples
 
 ## Usage
+
+### Absinthe
+
+Use the [absinthe_quarry](https://github.com/enewbury/absinthe_quarry) package to integrate Absinthe API with Quarry
+
+### General Usage
 
 Quarry is quite flexible, and can be used as you see fit, but it basically comes down to 1) Validating input 2) Calling Quarry to build a query, and 3) calling Repo.all()
 
