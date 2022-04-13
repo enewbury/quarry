@@ -59,7 +59,7 @@ Quarry has two functions `Quarry.build/2` and `Quarry.build!/2`, the later simpl
 
 ### Loading
 ```elixir
-%Ecto.Query{} = Quarry.build(Post, load: [:author, comments: :user])
+%Ecto.Query{} = Quarry.build!(Post, load: [:author, comments: :user])
 {%Ecto.Query{}, [%{type: :load, path: _, message: _}]} = Quarry.build(Post, load: [:fake_assoc])
 ```
 
