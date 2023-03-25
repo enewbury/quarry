@@ -48,7 +48,7 @@ The package can be installed by adding `quarry` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:quarry, "~> 0.3.1"}
+    {:quarry, "~> 0.3.2"}
   ]
 end
 ```
