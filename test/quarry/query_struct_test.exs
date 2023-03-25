@@ -75,8 +75,11 @@ defmodule Quarry.QueryStructTest do
 
   describe "with_from_as/2" do
     test "can add named binding to from" do
-      expected = from(p in Post, as: :post)
-      actual = QueryStruct.with_from_as(from(p in Post), :post)
+      without_line = fn query -> put_in(query, [:from, :line] |> Enum.map(&Access.key/1), nil) end
+
+      expected = from(p in Post, as: :post) |> without_line.()
+
+      actual = QueryStruct.with_from_as(from(p in Post), :post) |> without_line.()
       assert actual == expected
     end
   end
