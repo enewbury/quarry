@@ -4,6 +4,7 @@
 <!-- next-header -->
 
 ## [Unreleased] - ReleaseDate
+- Update dependencies
 
 ## [0.3.1] - 2022-4-11
 - Fix: Nested filter breaks without load option
