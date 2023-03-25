@@ -76,7 +76,7 @@ defmodule Quarry do
 
   # List of nested entities
   iex> Quarry.build!(Quarry.Post, load: [author: [:user, :posts]])
-  #Ecto.Query<from p0 in Quarry.Post, as: :post, join: a1 in assoc(p0, :author), as: :post_author, join: u2 in assoc(a1, :user), as: :post_author_user, preload: [author: [posts: #Ecto.Query<from p0 in Quarry.Post, as: :post_author_post>]], preload: [author: {a1, [user: u2]}]>
+  #Ecto.Query<from p0 in Quarry.Post, as: :post, join: a1 in assoc(p0, :author), as: :post_author, join: u2 in assoc(a1, :user), as: :post_author_user, preload: [author: [posts: #Ecto.Query<from p0 in Quarry.Post, as: :post_author_post>]], preload: [author: {a1, user: u2}]>
 
   # Use Quarry on nested has_many association
   iex> Quarry.build!(Quarry.Post, load: [comments: [filter: %{body: "comment"}, load: :user]])
