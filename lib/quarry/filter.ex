@@ -5,7 +5,6 @@ defmodule Quarry.Filter do
   alias Quarry.{Join, From}
 
   @type filter :: %{optional(atom()) => String.t() | number() | filter()}
-
   @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.filter(), [atom()]) ::
           {Ecto.Query.t(), [Quarry.error()]}
   def build({query, errors}, filters, load_path \\ []) do
@@ -72,8 +71,20 @@ defmodule Quarry.Filter do
     |> then(&{&1, errors})
   end
 
+  defp filter_by_operation({query, join_binding}, field_name, :eq, nil) do
+    Ecto.Query.where(query, is_nil(field(as(^join_binding), ^field_name)))
+  end
+
   defp filter_by_operation({query, join_binding}, field_name, :eq, value) do
     Ecto.Query.where(query, field(as(^join_binding), ^field_name) == ^value)
+  end
+
+  defp filter_by_operation({query, join_binding}, field_name, :neq, nil) do
+    Ecto.Query.where(query, not is_nil(field(as(^join_binding), ^field_name)))
+  end
+
+  defp filter_by_operation({query, join_binding}, field_name, :neq, value) do
+    Ecto.Query.where(query, field(as(^join_binding), ^field_name) != ^value)
   end
 
   defp filter_by_operation({query, join_binding}, field_name, :lt, value) do
@@ -98,5 +109,9 @@ defmodule Quarry.Filter do
 
   defp filter_by_operation({query, join_binding}, field_name, :ends_with, value) do
     Ecto.Query.where(query, ilike(field(as(^join_binding), ^field_name), ^"%#{value}"))
+  end
+
+  defp filter_by_operation({query, join_binding}, field_name, :contains, value) do
+    Ecto.Query.where(query, ilike(field(as(^join_binding), ^field_name), ^"%#{value}%"))
   end
 end

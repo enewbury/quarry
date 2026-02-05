@@ -14,8 +14,8 @@ defmodule Quarry.FilterTest do
       from(
         p in Post,
         as: :post,
-        where: as(:post).body == ^"body",
-        where: as(:post).title == ^"title"
+        where: as(:post).title == ^"title",
+        where: as(:post).body == ^"body"
       )
 
     filter = %{title: "title", body: "body"}
@@ -38,7 +38,7 @@ defmodule Quarry.FilterTest do
       from(
         p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
         where: as(:post_author).publisher == ^"publisher"
       )
@@ -66,12 +66,12 @@ defmodule Quarry.FilterTest do
       from(
         p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
-        join: u in assoc(a, :user),
+        left_join: u in assoc(a, :user),
         as: :post_author_user,
-        where: as(:post_author).publisher == ^"publisher",
-        where: as(:post_author_user).name == ^"john"
+        where: as(:post_author_user).name == ^"john",
+        where: as(:post_author).publisher == ^"publisher"
       )
 
     filter = %{author: %{publisher: "publisher", user: %{name: "john"}}}
@@ -84,12 +84,12 @@ defmodule Quarry.FilterTest do
       from(
         p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
-        join: u in assoc(a, :user),
+        left_join: u in assoc(a, :user),
         as: :post_author_user,
-        where: as(:post_author).publisher in ^["publisher1", "publisher2"],
-        where: as(:post_author_user).name == ^"john"
+        where: as(:post_author_user).name == ^"john",
+        where: as(:post_author).publisher in ^["publisher1", "publisher2"]
       )
 
     filter = %{author: %{publisher: ["publisher1", "publisher2"], user: %{name: "john"}}}
@@ -101,7 +101,7 @@ defmodule Quarry.FilterTest do
     expected =
       from(p in Post,
         as: :post,
-        join: c in assoc(p, :comments),
+        left_join: c in assoc(p, :comments),
         as: :post_comments,
         where: as(:post_comments).body == ^"comment"
       )
@@ -115,9 +115,9 @@ defmodule Quarry.FilterTest do
     expected =
       from(p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
-        join: u in assoc(a, :user),
+        left_join: u in assoc(a, :user),
         as: :post_author_user,
         where: as(:post_author_user).login_count < ^1
       )
@@ -130,9 +130,9 @@ defmodule Quarry.FilterTest do
     expected =
       from(p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
-        join: u in assoc(a, :user),
+        left_join: u in assoc(a, :user),
         as: :post_author_user,
         where: as(:post_author_user).login_count > ^1
       )
@@ -145,9 +145,9 @@ defmodule Quarry.FilterTest do
     expected =
       from(p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
-        join: u in assoc(a, :user),
+        left_join: u in assoc(a, :user),
         as: :post_author_user,
         where: as(:post_author_user).login_count >= ^1
       )
@@ -160,9 +160,9 @@ defmodule Quarry.FilterTest do
     expected =
       from(p in Post,
         as: :post,
-        join: a in assoc(p, :author),
+        left_join: a in assoc(p, :author),
         as: :post_author,
-        join: u in assoc(a, :user),
+        left_join: u in assoc(a, :user),
         as: :post_author_user,
         where: as(:post_author_user).login_count <= ^1
       )
@@ -180,6 +180,30 @@ defmodule Quarry.FilterTest do
   test "can filter by ends with", %{base: base} do
     expected = from(p in Post, as: :post, where: ilike(as(:post).title, ^"%learn vim"))
     {actual, []} = Filter.build(base, %{title: {:ends_with, "learn vim"}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter for nil field (simple value)", %{base: base} do
+    expected = from(p in Post, as: :post, where: is_nil(as(:post).inserted_at))
+    {actual, []} = Filter.build(base, %{inserted_at: nil})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter for nil field (explicit :eq)", %{base: base} do
+    expected = from(p in Post, as: :post, where: is_nil(as(:post).inserted_at))
+    {actual, []} = Filter.build(base, %{inserted_at: {:eq, nil}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter for not nil field (:neq nil)", %{base: base} do
+    expected = from(p in Post, as: :post, where: not is_nil(as(:post).inserted_at))
+    {actual, []} = Filter.build(base, %{inserted_at: {:neq, nil}})
+    assert inspect(actual) == inspect(expected)
+  end
+
+  test "can filter by not equal", %{base: base} do
+    expected = from(p in Post, as: :post, where: as(:post).title != ^"other")
+    {actual, []} = Filter.build(base, %{title: {:neq, "other"}})
     assert inspect(actual) == inspect(expected)
   end
 end

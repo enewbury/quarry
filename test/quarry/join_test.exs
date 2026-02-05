@@ -7,13 +7,13 @@ defmodule Quarry.JoinTest do
 
   describe "with_join/3" do
     test "can add a join" do
-      expected_query = from(p in Post, as: :post, join: a in assoc(p, :author), as: :post_author)
+      expected_query = from(p in Post, as: :post, left_join: a in assoc(p, :author), as: :post_author)
       {actual_query, join_binding} = Join.with_join(from(p in Post, as: :post), :post, :author)
       assert {inspect(expected_query), :post_author} == {inspect(actual_query), join_binding}
     end
 
     test "doesn't re-ad existing join" do
-      expected_query = from(p in Post, as: :post, join: a in assoc(p, :author), as: :post_author)
+      expected_query = from(p in Post, as: :post, left_join: a in assoc(p, :author), as: :post_author)
       {actual_query, join_binding} = Join.with_join(expected_query, :post, :author)
       assert {inspect(expected_query), :post_author} == {inspect(actual_query), join_binding}
     end
@@ -24,9 +24,9 @@ defmodule Quarry.JoinTest do
       expected_query =
         from(p in Post,
           as: :post,
-          join: a in assoc(p, :author),
+          left_join: a in assoc(p, :author),
           as: :post_author,
-          join: u in assoc(a, :user),
+          left_join: u in assoc(a, :user),
           as: :post_author_user
         )
 
@@ -37,14 +37,14 @@ defmodule Quarry.JoinTest do
     end
 
     test "doesn't re-add existing join" do
-      start_query = from(p in Post, as: :post, join: a in assoc(p, :author), as: :post_author)
+      start_query = from(p in Post, as: :post, left_join: a in assoc(p, :author), as: :post_author)
 
       expected_query =
         from(p in Post,
           as: :post,
-          join: a in assoc(p, :author),
+          left_join: a in assoc(p, :author),
           as: :post_author,
-          join: u in assoc(a, :user),
+          left_join: u in assoc(a, :user),
           as: :post_author_user
         )
 

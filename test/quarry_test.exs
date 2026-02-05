@@ -24,7 +24,7 @@ defmodule QuarryTest do
         from(
           p in Post,
           as: :post,
-          join: a in assoc(p, :author),
+          left_join: a in assoc(p, :author),
           as: :post_author,
           where: as(:post_author).publisher == ^"publisher",
           preload: [author: a]

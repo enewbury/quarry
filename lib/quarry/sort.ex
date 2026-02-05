@@ -7,7 +7,7 @@ defmodule Quarry.Sort do
   @sort_direction [:asc, :desc]
 
   @spec build({Ecto.Query.t(), [Quarry.error()]}, Quarry.sort()) ::
-          {Ecto.Query.t(), [Qurry.error()]}
+          {Ecto.Query.t(), [Quarry.error()]}
   def build({query, errors}, keys, load_path \\ []) do
     root_binding = From.get_root_binding(query)
     schema = From.get_root_schema(query)
@@ -61,13 +61,14 @@ defmodule Quarry.Sort do
   end
 
   defp sort_key(field_name, dir, join_deps, state) when is_atom(field_name) do
-    if field_name in state[:schema].__schema__(:fields) and dir in @sort_direction do
+    if dir in @sort_direction do
       {query, join_binding} = Join.join_dependencies(state[:query], state[:binding], join_deps)
-      query = Ecto.Query.order_by(query, [{^dir, field(as(^join_binding), ^field_name)}])
+      query = if field_name in state[:schema].__schema__(:fields) do
+        Ecto.Query.order_by(query, [{^dir, field(as(^join_binding), ^field_name)}])
+      else
+        Ecto.Query.order_by(query, [{^dir, selected_as(^field_name)}])
+      end
       {query, state[:errors]}
-    else
-      error = build_error(field_name, join_deps, state)
-      {state[:query], [error | state[:errors]]}
     end
   end
 
